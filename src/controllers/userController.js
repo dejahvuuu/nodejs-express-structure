@@ -1,4 +1,7 @@
 const User = require('../models/userModel');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const jwt_secret = "##%dasdsadasd##"; 
 
 // El controlador es el encargado de manejar la logica de negocio y crear los metodos correspondientes bpara manejar las solicitudes (obtener, crear, actualizar, eliminar)
 
@@ -46,6 +49,80 @@ const userController = {
             res.status(201).json(savedUser);
         } catch (error) {
             console.error('Error al crear usuario:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+    },
+
+    updateUser: async (req, res) => {
+        try {
+            const {name} = req.params;
+            const userUpdate = await User.findOneAndUpdate({name: name}, {$set: { name: 'Diana'}})
+            res.json(userUpdate)
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+    },
+
+    deleteUser: async (req, res) => {
+        try {
+            const {name} = req.params;
+            const deleteUser = await User.findOneAndDelete({name: name})
+            res.json(deleteUser)    
+
+        } catch (error) {
+            console.error('Error al borrar el usuario:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+
+    },
+
+    register: async (req, res) => {
+        try {
+            const users = await User.find();
+            const { name, email, password } = req.body;
+
+            const userData = {
+                userid: users.length + 1,
+                name: name,
+                email: email,
+                password: await bcrypt.hash(password,10),
+            }
+
+            const newUser = new User(userData);
+            const savedUser = await newUser.save(); 
+            res.status(201).json(savedUser)
+
+        } catch (error) {
+            console.error('Error al registrar el usuario:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+    },
+    
+    login: async (req, res) => {
+        try {
+            const { email, password } = req.body;
+            const user = await User.find({email: email});
+
+            if (!user) {
+               return res.status(400).json({message: "Invalid username or password"});     
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, user[0].password);
+
+            if (!isPasswordValid) {
+                return res.status(400).json({message: "Invalid username or password"});     
+            }
+            
+            const token = jwt.sign({userid: user.id }, jwt_secret, {
+                expiresIn: "1h"
+            })
+
+            res.json({message: "Logged in successfully", token})
+
+
+        } catch (error) {
+            console.error('Error al loguear el usuario:', error);
             res.status(500).json({ message: 'Internal Server Error' });
         }
     }

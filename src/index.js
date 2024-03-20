@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser')
 const connectDB = require('./config/database');
 const routes = require('./routes');
+const auth = require("./middleware/auth")
 
 const app = express();
 const port = 3000;
@@ -17,6 +18,8 @@ app.use(bodyParser.json())
 // Cuando extended está establecido en false, bodyParser utiliza la función querystring de Node.js para analizar los cuerpos de las solicitudes entrantes. 
 // Cuando extended está establecido en true, utiliza la biblioteca qs para analizar los cuerpos de las solicitudes entrantes, lo que permite analizar objetos anidados y matrices. 
 app.use(bodyParser.urlencoded({ extended: false }))
+
+app.use(auth.initialize())
 
 // Configura las rutas
 app.use('/', routes);

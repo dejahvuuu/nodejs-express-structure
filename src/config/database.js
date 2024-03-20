@@ -29,11 +29,13 @@ const initializeData = async () => {
 
         const usersData = [
             {
+                userid: 1,
                 name: 'Juan',
                 email: 'juan@gmail.com',
                 password: 'Londres',
             },
             {
+                userid: 2,
                 name: 'Adriana',
                 email: 'maria@hotmail.com',
                 password: 'París',
